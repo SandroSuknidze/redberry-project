@@ -10,13 +10,18 @@ const toggleLoginForm = () => {
 const closeLoginForm = () => {
   showLoginForm.value = false;
 };
+
+const auth = useAuth();
+
+// console.log(auth.value.isAuthenticated);
 </script>
 
 <template>
   <div>
     <div class="nav">
       <img src="../assets/img/img.png" alt="logo" class="logo">
-      <button @click="toggleLoginForm" class="login">შესვლა</button>
+      <div v-if="!auth.isAuthenticated" @click="toggleLoginForm" class="login">შესვლა</div>
+      <NuxtLink v-else to="/create-blog" class="add-blog">დაამატე ბლოგი</NuxtLink>
     </div>
     <div v-if="showLoginForm">
       <login-form @close="closeLoginForm" />
@@ -32,7 +37,7 @@ const closeLoginForm = () => {
     align-items: center;
     height: 80px;
     background: white;
-    border: 1px solid #E4E3EB;
+    border-bottom: 1px solid #E4E3EB;
     padding: 0 76px;
   }
 
@@ -47,5 +52,14 @@ const closeLoginForm = () => {
     background: #5D37F3;
     color: white;
     cursor: pointer;
+  }
+
+  .add-blog {
+    border-radius: 8px;
+    padding: 10px 20px;
+    background: #5D37F3;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
   }
 </style>

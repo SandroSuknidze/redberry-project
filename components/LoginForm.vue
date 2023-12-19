@@ -5,6 +5,7 @@ const email = ref('');
 const isValidEmail = ref(true);
 const isVisible = ref(true);
 const isLoginSuccess = ref(false);
+const auth = useAuth();
 
 
 const runtimeConfig = useRuntimeConfig()
@@ -22,8 +23,8 @@ const validateEmail = () => {
     isValidEmail.value = false;
 
   }
-
 }
+
 
 const generateToken = async () => {
   try {
@@ -38,15 +39,10 @@ const generateToken = async () => {
     if (response.ok) {
       const token = await response.text();
 
-      // Store the token securely (e.g., in a cookie or local storage)
-      // For example, using cookies:
       document.cookie = `token=${token}; Secure; HttpOnly; SameSite=Strict`;
-
       console.log('Token generated successfully!');
       console.log('Token:', token);
       isLoginSuccess.value = true;
-
-      // Redirect or update UI as needed
     } else {
       throw new Error(`Request failed with status ${response.status}`);
     }
@@ -74,11 +70,8 @@ const login = async () => {
 
     if (response.ok) {
       await generateToken();
+      auth.value.isAuthenticated = true;
 
-
-      console.log('User logged in successfully!');
-
-      // Redirect or update UI as needed
     } else {
       throw new Error(`Request failed with status ${response.status}`);
     }
@@ -88,21 +81,24 @@ const login = async () => {
 };
 
 </script>
-
+<!--Example@redberry.ge-->
 <template>
   <div v-if="isVisible" class="login-form-modal">
     <div v-if="!isLoginSuccess" class="login-form">
       <div class="heading">შესვლა</div>
-      <div @click="$emit('close')" class="close"></div>
-      <label for="email">ელ-ფოსტა</label>
-      <input v-model="email" type="email" placeholder="Example@redberry.ge" class="input" required/>
-      <div @click="validateEmail" class="login-button">Login</div>
+<!--      <div @click="$emit('close')" class="close"></div>-->
+      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login">
+      <label for="email" class="label-email">ელ-ფოსტა</label>
+      <input v-model="email" type="email" class="input-email" required/>
+      <div @click="validateEmail" class="login-button">შესვლა</div>
       <div v-if="!isValidEmail" style="color: black">Invalid email</div>
     </div>
     <div v-else class="login-form">
-      <img src="../assets/img/img_2.png">
+      <img src="../assets/img/img_2.png" alt="success" class="success">
       <div @click="" class="login-button">კარგი</div>
-      <div @click="$emit('close')" class="close"></div>
+<!--      <div @click="$emit('close')" class="close"></div>-->
+      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login">
+
 
     </div>
   </div>
@@ -133,44 +129,24 @@ const login = async () => {
 }
 
 
-.close {
-  position: absolute;
-  right: 32px;
-  top: 32px;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  color: #1A1A1F;
-}
-.close:before, .close:after {
-  position: absolute;
-  left: 15px;
-  content: ' ';
-  height: 18px;
-  width: 1.5px;
-  background-color: #333;
-}
-.close:before {
-  transform: rotate(45deg);
-}
-.close:after {
-  transform: rotate(-45deg);
-}
 
 .heading {
   font-size: 24px;
   line-height: 32px;
+  color: #1A1A1F;
   text-align: center;
   font-weight: 700;
+  margin-top: 20px;
 }
 
-.input {
+.input-email {
   width: 100%;
-  border: 1.5px solid #5D37F3;
+  border: 2px solid #5D37F3;
   background: #F7F7FF;
   height: 44px;
   border-radius: 12px;
-  padding-left: 10px;
+  position: relative;
+  top: 54px;
 }
 
 .login-button {
@@ -184,5 +160,27 @@ const login = async () => {
   line-height: 20px;
   font-weight: 500;
   margin-top: 80px;
+}
+
+.success {
+  width: 64px;
+  height: 64px;
+}
+
+.close-login {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  cursor: pointer;
+}
+
+.label-email {
+  color: #1A1A1F;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  position: absolute;
 }
 </style>
