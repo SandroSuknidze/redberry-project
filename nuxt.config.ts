@@ -5,4 +5,10 @@ export default defineNuxtConfig({
   css: [
     '@/assets/css/global.css',
   ],
+
+  runtimeConfig: {
+    public: {
+      apiBase: 'https://api.blog.redberryinternship.ge/api',
+    },
+  },
 })

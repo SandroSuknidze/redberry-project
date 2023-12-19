@@ -3,9 +3,12 @@
 </script>
 
 <template>
-
+  <TextWithPhoto />
 </template>
 
 <style >
+  body {
+    background: #F3F2FA;
 
+  }
 </style>
