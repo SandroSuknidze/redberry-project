@@ -1,5 +1,7 @@
 <script setup>
-
+// definePageMeta({
+//   middleware: ['custom-auth'],
+// })
 </script>
 
 <template>

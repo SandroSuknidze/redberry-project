@@ -9,10 +9,8 @@ export default defineNuxtRouteMiddleware(() => {
         console.log("Auth token is boolean:", auth.value.isAuthenticated);
         console.log("Token:", token);
 
-        if (!auth.value.isAuthenticated) {
-            return navigateTo('/');
-        }
-        return true;
+        return auth.value.isAuthenticated;
+
     }
 
 });

@@ -20,7 +20,7 @@ const auth = useAuth();
   <div>
     <div class="nav">
       <img src="../assets/img/img.png" alt="logo" class="logo">
-      <div v-if="!auth.isAuthenticated" @click="toggleLoginForm" class="login">შესვლა</div>
+      <div v-if="!auth.isAuthenticated" @click="toggleLoginForm" class="login"><div class="text">შესვლა</div></div>
       <NuxtLink v-else to="/create-blog" class="add-blog">დაამატე ბლოგი</NuxtLink>
     </div>
     <div v-if="showLoginForm">
@@ -52,6 +52,10 @@ const auth = useAuth();
     background: #5D37F3;
     color: white;
     cursor: pointer;
+  }
+
+  .text {
+    font-size: 14px;
   }
 
   .add-blog {

@@ -5,7 +5,7 @@
 <template>
   <div class="text-with-photo">
     <div class="text-container">
-      <p class="">ბლოგი</p>
+      <p>ბლოგი</p>
     </div>
     <div class="photo-container">
       <img src="../assets/img/img_1.png" alt="photo" class="photo">
@@ -17,9 +17,11 @@
   .text-with-photo {
     display: flex;
     text-align: center;
-    margin-top: 100px;
-    padding: 0 90px;
+    margin-top: 64px;
+    padding-left: 89px;
+    padding-right: 76px;
   }
+
 
   .text-container {
     flex: 1;
@@ -27,6 +29,7 @@
     font-weight: 900;
     line-height: 72px;
     text-align: left;
+    font-family: 'FiraGO Bold 700', sans-serif;
   }
 
   .photo {

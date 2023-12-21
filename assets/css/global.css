@@ -1,10 +1,20 @@
 @font-face {
-    font-family: 'FiraGO';
-    src: url('../fonts/firaGO-Regular.georgian.woff2') format('woff2');
+    font-family: 'FiraGO Regular 400';
+    src: url('../fonts/FiraGO-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'FiraGO Medium 500';
+    src: url('../fonts/FiraGO-Medium.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'FiraGO Bold 700';
+    src: url('../fonts/FiraGO-Bold.woff2') format('woff2');
 }
 
 body {
-    font-family: 'FiraGO', sans-serif;
+    font-family: 'FiraGO Regular 400', sans-serif;
     margin: 0;
     padding: 0;
 }

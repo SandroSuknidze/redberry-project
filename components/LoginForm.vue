@@ -1,5 +1,6 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue';
+import Cookies from 'js-cookie';
 
 const email = ref('');
 const isValidEmail = ref(true);
@@ -7,21 +8,27 @@ const isVisible = ref(true);
 const isLoginSuccess = ref(false);
 const auth = useAuth();
 
+const inputClass = ref(['']);
+const loginFormClass = ref(['']);
+
 
 const runtimeConfig = useRuntimeConfig()
 
 const validateEmail = () => {
   const isNotEmpty = email.value.trim() !== '';
-
   const isValidFormat = email.value.endsWith('@redberry.ge');
-
 
   if (isValidFormat && isNotEmpty) {
     isValidEmail.value = true;
     login();
+    inputClass.value.pop();
+    loginFormClass.value.pop();
   } else {
     isValidEmail.value = false;
-
+    if (!inputClass.value.includes('input-email-red')) {
+      inputClass.value.push('input-email-red');
+      loginFormClass.value.push('login-form-big');
+    }
   }
 }
 
@@ -37,7 +44,13 @@ const generateToken = async () => {
     });
 
     if (response.ok) {
-      const token = await response.text();
+      const responseText = await response.text();
+      const responseData = JSON.parse(responseText);
+      const token = responseData.token;
+
+
+      Cookies.set('authToken', token, { expires: 7, secure: true }); // Expires in 7 days, for example
+      localStorage.setItem('authToken', token);
 
       document.cookie = `token=${token}; Secure; HttpOnly; SameSite=Strict`;
       console.log('Token generated successfully!');
@@ -53,7 +66,7 @@ const generateToken = async () => {
 
 const login = async () => {
   if (!isValidEmail.value) {
-    return; // Do not proceed if the email is not valid
+    return;
   }
 
   try {
@@ -71,35 +84,41 @@ const login = async () => {
     if (response.ok) {
       await generateToken();
       auth.value.isAuthenticated = true;
+      loginFormClass.value.push('login-form-big');
 
     } else {
+      isValidEmail.value = false;
+      if (!inputClass.value.includes('input-email-red')) {
+        inputClass.value.push('input-email-red');
+        loginFormClass.value.push('login-form-big');
+      }
       throw new Error(`Request failed with status ${response.status}`);
     }
   } catch (error) {
     console.log('error sending request', error);
   }
 };
-
+// token: 2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3
 </script>
-<!--Example@redberry.ge-->
+
 <template>
   <div v-if="isVisible" class="login-form-modal">
-    <div v-if="!isLoginSuccess" class="login-form">
+    <div v-if="!isLoginSuccess" class="login-form" :class="loginFormClass">
       <div class="heading">შესვლა</div>
-<!--      <div @click="$emit('close')" class="close"></div>-->
-      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login">
-      <label for="email" class="label-email">ელ-ფოსტა</label>
-      <input v-model="email" type="email" class="input-email" required/>
+      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login" alt="close-button">
+      <div class="label-email">ელ-ფოსტა</div>
+      <input v-model="email" type="email" class="input-email" :class="inputClass" placeholder="&#x200A;Example@redberry.ge" required/>
+      <div v-if="!isValidEmail" class="error-message">
+        <img src="../assets/img/img_4.png" alt="error-image">
+        <div class="invalid-email">ელ-ფოსტა არ მოიძებნა</div>
+      </div>
       <div @click="validateEmail" class="login-button">შესვლა</div>
-      <div v-if="!isValidEmail" style="color: black">Invalid email</div>
     </div>
-    <div v-else class="login-form">
+    <div v-else class="login-form" :class="loginFormClass">
       <img src="../assets/img/img_2.png" alt="success" class="success">
-      <div @click="" class="login-button">კარგი</div>
-<!--      <div @click="$emit('close')" class="close"></div>-->
-      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login">
-
-
+      <div class="success-text">წარმატებული ავტორიზაცია</div>
+      <div @click="$emit('close')" class="success-login-button">კარგი</div>
+      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login" alt="close-button">
     </div>
   </div>
 </template>
@@ -119,8 +138,8 @@ const login = async () => {
 
 .login-form {
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 0 24px;
+  border-radius: 12px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 480px;
@@ -136,17 +155,29 @@ const login = async () => {
   color: #1A1A1F;
   text-align: center;
   font-weight: 700;
-  margin-top: 20px;
+  margin-top: 40px;
+  font-family: 'FiraGO Bold 700', sans-serif;
+
 }
 
 .input-email {
-  width: 100%;
-  border: 2px solid #5D37F3;
+  width: 93%;
+  border: 1px solid #5D37F3;
+  box-shadow: 0 0 0 0.5px #5D37F3;
   background: #F7F7FF;
   height: 44px;
   border-radius: 12px;
-  position: relative;
-  top: 54px;
+  margin-top: 8px;
+  padding: 0 15px;
+  font-size: 14px;
+  font-family: 'FiraGO Regular 400', sans-serif;
+  caret-color: #1A1A1F;
+  z-index: 2;
+}
+
+.input-email:focus {
+  border-color: #5D37F3;
+  outline: none;
 }
 
 .login-button {
@@ -158,13 +189,33 @@ const login = async () => {
   padding: 10px 0;
   font-size: 14px;
   line-height: 20px;
-  font-weight: 500;
-  margin-top: 80px;
+  margin-top: 24px;
 }
 
 .success {
   width: 64px;
   height: 64px;
+  margin-top: 64px;
+}
+
+.success-text {
+  color: #1A1A1F;
+  margin-top: 16px;
+  font-family: 'FiraGO Bold 700', sans-serif;
+  line-height: 28px;
+  font-size: 20px;
+}
+
+.success-login-button {
+  cursor: pointer;
+  width: 100%;
+  color: white;
+  background: #5D37F3;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 48px;
 }
 
 .close-login {
@@ -181,6 +232,37 @@ const login = async () => {
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  position: absolute;
+  margin-top: 24px;
+  text-align: left;
+  font-family: 'FiraGO Medium 500', sans-serif;
 }
+
+/* Error message */
+
+.invalid-email {
+  color: #EA1919;
+  line-height: 20px;
+  font-family: 'FiraGO Regular 400', sans-serif;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.error-message {
+  display: flex;
+  margin-top: 8px;
+}
+
+.input-email-red {
+  border: 1px solid #EA1919 !important;
+  box-shadow: 0 0 0 0.5px #EA1919 !important;
+  background: #FAF2F3;
+}
+
+.login-form-big {
+  height: 300px !important;
+}
+
+/* Error message */
+
+
 </style>
