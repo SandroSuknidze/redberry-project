@@ -49,9 +49,7 @@ const generateToken = async () => {
       const token = responseData.token;
 
 
-      Cookies.set('authToken', token, { expires: 7, secure: true }); // Expires in 7 days, for example
-      localStorage.setItem('authToken', token);
-
+      Cookies.set('authToken', token, { expires: 7, secure: true });
       document.cookie = `token=${token}; Secure; HttpOnly; SameSite=Strict`;
       console.log('Token generated successfully!');
       console.log('Token:', token);

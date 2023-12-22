@@ -1,4 +1,10 @@
 <script setup>
+const auth = useAuth();
+
+onMounted(() => {
+  const token = useCookie('authToken').value; // or localStorage
+  auth.value.isAuthenticated = !!token;
+});
 </script>
 
 <template>

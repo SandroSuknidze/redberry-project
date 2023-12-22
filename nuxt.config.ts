@@ -11,4 +11,6 @@ export default defineNuxtConfig({
       apiBase: 'https://api.blog.redberryinternship.ge/api',
     },
   },
+
+  ssr: false,
 })
