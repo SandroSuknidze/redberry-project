@@ -7,9 +7,6 @@
     <div class="nav">
       <img src="../assets/img/img.png" alt="logo" class="logo">
     </div>
-    <div>
-      <NuxtLink to="/">Back</NuxtLink>
-    </div>
   </div>
 
 </template>

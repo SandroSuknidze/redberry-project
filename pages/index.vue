@@ -6,6 +6,7 @@
 
 <template>
   <TextWithPhoto />
+  <FilterableBlogList />
 </template>
 
 <style >
