@@ -4,18 +4,39 @@
     middleware: ['auth'],
   })
 
+  const runtimeConfig = useRuntimeConfig();
+  const token = '2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3';
+
 
   const fileUploaded = ref(false);
   const uploadedFileName = ref('');
 
-  const inputText = ref('');
+  const authorInputText = ref('');
   const isMinLength = ref('');
   const isMinWords = ref('');
   const isGeorgian = ref('');
   const isValid = ref('');
 
-  function validateInput() {
-    const trimmedInput = inputText.value.trim();
+  const titleInputText = ref('');
+  const titleIsMinLength = ref('');
+
+  const descriptionInputText = ref('');
+  const descriptionIsMinLength = ref('');
+
+  const dateInputText = ref('');
+  const dateIsValid = ref('');
+
+  const tags = ref([]);
+  const dropdownVisible = ref(false);
+  const tagIsValid = ref('');
+
+  const emailInputText = ref('');
+  const emailIsValid = ref('');
+
+  const submitIsValid = ref('');
+
+  const authorValidateInput = () => {
+    const trimmedInput = authorInputText.value.trim();
     isMinLength.value = trimmedInput.length >= 4 ? 'valid' : 'invalid';
 
     const words = trimmedInput.split(/\s+/);
@@ -24,31 +45,110 @@
     const georgianRegex = /^[ა-ჰ]+$/;
     isGeorgian.value = words.every(word => georgianRegex.test(word)) ? 'valid' : 'invalid';
 
-    isValid.value = (isMinLength.value && isMinWords.value && isGeorgian.value) === 'valid' ? 'valid' : 'invalid';
+    isValid.value = (isMinLength.value === 'valid' && isMinWords.value === 'valid' && isGeorgian.value === 'valid') ? 'valid' : 'invalid';
+
+    localStorage.setItem('author', authorInputText.value);
+
+
+    submitValidation();
+
+  }
+
+  const titleValidateInput = () => {
+    const trimmedInput = titleInputText.value.trim();
+    titleIsMinLength.value = trimmedInput.length >= 2 ? 'valid' : 'invalid';
+
+    localStorage.setItem('title', titleInputText.value);
+    submitValidation();
+
+  }
+
+  const descriptionValidateInput = () => {
+    const trimmedInput = descriptionInputText.value.trim();
+    descriptionIsMinLength.value = trimmedInput.length >= 2 ? 'valid' : 'invalid';
+
+    localStorage.setItem('description', descriptionInputText.value);
+    submitValidation();
+
+  }
+
+  const dateValidateInput = () => {
+    if (dateInputText.value === '') {
+      dateIsValid.value = 'invalid';
+    } else {
+      dateIsValid.value = 'valid';
+    }
+
+    localStorage.setItem('date', dateInputText.value);
+
+    submitValidation();
+
+  }
+
+  const addTag = (option) => {
+    if(!tags.value.includes(option)) {
+      tags.value.push(option);
+    }
+
+    if (tags.value.length > 0) {
+      tagIsValid.value = 'valid'
+    }
+
+    localStorage.setItem('tags', JSON.stringify(tags.value));
+    submitValidation();
+
+  };
+
+  const removeTag = (index) => {
+    tags.value.splice(index, 1);
+    if (tags.value.length === 0) {
+      tagIsValid.value = 'invalid'
+    }
+
+    localStorage.setItem('tags', JSON.stringify(tags.value));
+    submitValidation();
+
+  };
+
+  const toggleDropdown = () => {
+    dropdownVisible.value = !dropdownVisible.value;
+  };
+
+  const emailValidateInput = () => {
+    emailIsValid.value = emailInputText.value.endsWith('@redberry.ge') ? 'valid' : 'invalid';
+
+    localStorage.setItem('email', emailInputText.value);
+    submitValidation();
+
   }
 
   const checkUploadedFile = () => {
     const fileData = localStorage.getItem('uploadedFile');
     if (fileData) {
       const fileMetadata = JSON.parse(fileData);
-      uploadedFileName.value = fileMetadata.name;
+      uploadedFileName.value = fileMetadata.image;
       fileUploaded.value = true;
     }
+    submitValidation();
+
   }
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      uploadedFileName.value = file.name;
+      uploadedFileName.value = file.image;
       fileUploaded.value = true;
-      localStorage.setItem('uploadedFile', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
+      localStorage.setItem('uploadedFile', JSON.stringify({ image: file.name, type: file.type }));
     }
+    submitValidation();
+
   }
 
   const removeFile = () => {
     fileUploaded.value = false;
     uploadedFileName.value = '';
     localStorage.removeItem('uploadedFile');
+    submitValidation();
   };
 
   const triggerFileInput = () => {
@@ -62,19 +162,171 @@
 
   const processFile = (file) => {
     if (file) {
-      uploadedFileName.value = file.name;
+      uploadedFileName.value = file.image;
       fileUploaded.value = true;
     }
+    submitValidation();
   };
 
   onMounted(checkUploadedFile);
   onMounted(() => {
+    submitValidation();
     document.body.style.backgroundColor = '#FBFAFF';
+
+    const storedAuthor = localStorage.getItem('author');
+    if (storedAuthor) {
+      authorInputText.value = storedAuthor;
+      authorValidateInput();
+    }
+
+
+    const storedTitle = localStorage.getItem('title');
+    if (storedTitle) {
+      titleInputText.value = storedTitle;
+      titleValidateInput();
+
+    }
+
+    const storedDescription = localStorage.getItem('description');
+    if (storedDescription) {
+      descriptionInputText.value = storedDescription;
+      descriptionValidateInput();
+    }
+
+    const storedDate = localStorage.getItem('date');
+    if (storedDate) {
+      dateInputText.value = storedDate;
+      dateValidateInput();
+    }
+
+    const storedTags = localStorage.getItem('tags');
+    if (storedTags) {
+      tags.value = JSON.parse(storedTags);
+      if (tags.value.length > 0) {
+        tagIsValid.value = 'valid'
+      }
+    }
+
+    const storedEmail = localStorage.getItem('email');
+    if (storedEmail) {
+      emailInputText.value = storedEmail;
+      emailValidateInput();
+    }
   });
 
   onUnmounted(() => {
     document.body.style.backgroundColor = '';
   });
+
+  const categories = ref([]);
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${runtimeConfig.public.apiBase}/categories`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      if (response.ok) {
+        categories.value = await response.json();
+      } else {
+        console.error('Error fetching categories:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  onMounted(fetchCategories);
+
+
+  const submitValidation = () => {
+    if (fileUploaded.value === true &&
+        ((isValid.value === titleIsMinLength.value) && (descriptionIsMinLength.value === dateIsValid.value)  && (tagIsValid.value === 'valid'))){
+      submitIsValid.value = 'valid';
+    } else {
+      submitIsValid.value = 'invalid';
+    }
+  }
+
+
+
+
+
+
+  const submitData = async () => {
+    if (submitIsValid.value !== 'valid') {
+      console.error('Validation failed. Submission aborted.');
+      return;
+    }
+
+    const url = `${runtimeConfig.public.apiBase}/blogs`;
+    const formData = new FormData();
+
+    formData.append('title', titleInputText.value);
+    formData.append('description', descriptionInputText.value);
+    formData.append('author', authorInputText.value);
+    formData.append('publish_date', dateInputText.value);
+    formData.append('email', emailInputText.value);
+
+    const categoryIds = tags.value.map(tag => tag.id);
+    formData.append('categories', JSON.stringify(categoryIds));
+
+    if (fileUploaded.value) {
+      const fileInput = localStorage.getItem('uploadedFile');
+      formData.append('image', fileInput);
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log('Data submitted successfully:', responseData);
+    } catch (error) {
+      console.error('Error submitting data:', error);
+    }
+  };
+
+
+
+  // const blogs = ref([]);
+  //
+  // const fetchBlogs = async () => {
+  //   const url = `${runtimeConfig.public.apiBase}/blogs`;
+  //
+  //   try {
+  //     const response = await fetch(url, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`,
+  //         'Accept': 'application/json',
+  //       }
+  //     });
+  //
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //
+  //     blogs.value = await response.json();
+  //   } catch (error) {
+  //     console.error('Error fetching blogs:', error);
+  //   }
+  // };
+  //
+  // onMounted(fetchBlogs);
+
+
 </script>
 
 <template>
@@ -91,51 +343,102 @@
       </div>
       <div class="upload-container">
         <div v-if="!fileUploaded" class="file-not-uploaded" @click="triggerFileInput"
-             @dragover.prevent="dragOver"
-             @dragleave.prevent="dragLeave"
              @drop.prevent="handleDrop">
-          <input type="file" id="file-upload" @change="handleFileUpload" hidden />
-            <img src="../assets/img/photo_placeholder.png" alt="photo-placeholder" class="upload-icon"/>
-            <div class="inside-text">ჩააგდეთ ფაილი აქ ან <span class="inside-text-span">აირჩიეთ ფაილი</span></div>
+          <input type="file" id="file-upload" @change="handleFileUpload" hidden/>
+          <img src="../assets/img/photo_placeholder.png" alt="photo-placeholder" class="upload-icon"/>
+          <div class="inside-text">ჩააგდეთ ფაილი აქ ან <span class="inside-text-span">აირჩიეთ ფაილი</span></div>
         </div>
         <div v-else class="uploaded-file-photo">
-            <img src="../assets/img/uploaded_photo_placeholder.png" alt="uploaded-photo-placeholder" class="uploaded-icon"> {{ uploadedFileName }}
-            <img src="../assets/img/img_3.png" alt="close-button" @click="removeFile" class="close-button">
+          <img src="../assets/img/uploaded_photo_placeholder.png" alt="uploaded-photo-placeholder"
+               class="uploaded-icon"> {{ uploadedFileName }}
+          <img src="../assets/img/img_3.png" alt="close-button" @click="removeFile" class="close-button">
         </div>
       </div>
       <div class="author-container">
         <div>
           <div class="author-label">ავტორი *</div>
-          <input v-model="inputText" @keyup="validateInput" :class="{ 'invalid-input': isValid === 'invalid', 'valid-input': isValid === 'valid' }" type="text" class="author-input" placeholder="&#x200A;შეიყვანეთ ავტორი">
+          <input v-model="authorInputText" @keyup="authorValidateInput"
+                 :class="{ 'invalid-input': isValid === 'invalid', 'valid-input': isValid === 'valid' }" type="text"
+                 class="author-input" placeholder="&#x200A;შეიყვანეთ ავტორი">
           <ul class="author-validations">
             <li :class="{ 'red': isMinLength === 'invalid', 'green': isMinLength === 'valid'}">მინიმუმ 4 სიმბოლო</li>
             <li :class="{ 'red': isMinWords === 'invalid' , 'green': isMinWords === 'valid'}">მინიმუმ ორი სიტყვა</li>
-            <li :class="{ 'red': isGeorgian === 'invalid' , 'green': isGeorgian === 'valid'}">მხოლოდ ქართული სიმბოლოები</li>
+            <li :class="{ 'red': isGeorgian === 'invalid' , 'green': isGeorgian === 'valid'}">მხოლოდ ქართული
+              სიმბოლოები
+            </li>
           </ul>
         </div>
         <div>
           <div class="author-label">სათაური *</div>
-          <input type="text" class="author-input" placeholder="&#x200A;შეიყვანეთ სათაური">
-          <div class="title-validation">მინიმუმ 4 სიმბოლო</div>
+          <input type="text" v-model="titleInputText" @keyup="titleValidateInput"
+                 :class="{ 'invalid-input': titleIsMinLength === 'invalid', 'valid-input': titleIsMinLength === 'valid' }"
+                 class="author-input" placeholder="&#x200A;შეიყვანეთ სათაური">
+          <div class="title-validation"
+               :class="{ 'red': titleIsMinLength === 'invalid' , 'green': titleIsMinLength === 'valid'}">მინიმუმ 2
+            სიმბოლო
+          </div>
         </div>
       </div>
       <div class="description-container">
         <div class="description-label">აღწერა *</div>
-        <textarea class="custom-textarea" placeholder="შეიყვანეთ აღწერა"></textarea>
-        <div class="title-validation">მინიმუმ 4 სიმბოლო</div>
+        <textarea class="custom-textarea" v-model="descriptionInputText" @keyup="descriptionValidateInput"
+                  :class="{ 'invalid-input': descriptionIsMinLength === 'invalid', 'valid-input': descriptionIsMinLength === 'valid' }"
+                  placeholder="შეიყვანეთ აღწერა"></textarea>
+        <div class="title-validation"
+             :class="{ 'red': descriptionIsMinLength === 'invalid' , 'green': descriptionIsMinLength === 'valid'}">
+          მინიმუმ 2 სიმბოლო
+        </div>
       </div>
       <div class="publish-container">
         <div>
           <div class="author-label">გამოქვეყნების თარიღი *</div>
-          <input type="date" class="date-input">
+          <input type="date" class="date-input" v-model="dateInputText" @change="dateValidateInput"
+                 :class="{ 'invalid-input': dateIsValid === 'invalid', 'valid-input': dateIsValid === 'valid'}">
         </div>
         <div>
-          <div class="author-label">გამოქვეყნების თარიღი *</div>
-          <select name="" id="">
-            <option>hah</option>
-          </select>
+          <div class="author-label">კატეგორია</div>
+          <div class="categories-container">
+            <div class="tags-input" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
+              <div v-for="(tag, index) in tags" :key="index" class="category-text-input"
+                   :style="{ backgroundColor: tag.background_color, color: tag.text_color }">
+                {{ tag.title }}
+                <span class="remove-tag" @click="removeTag(index)"><img src="../assets/img/close_button_white.png"
+                                                                        alt="delete" class="delete-button"></span>
+              </div>
+            </div>
+            <div class="dropdown-button" @click="toggleDropdown">
+              <img src="../assets/img/arrow_down.png" alt="arrow-down" class="dropdown-img">
+            </div>
+          </div>
+          <div v-if="dropdownVisible">
+            <div v-for="categoryGroup in categories" class="box">
+              <div
+                  v-for="(category, index) in categoryGroup"
+                  :key="index"
+                  class="category-text"
+                  @click="addTag(category)"
+                  :style="{ backgroundColor: category.background_color, color: category.text_color }"
+              >
+                {{ category.title }}
+              </div>
+            </div>
+          </div>
         </div>
-
+      </div>
+      <div class="email-container">
+        <div class="author-label">ელ-ფოსტა</div>
+        <input v-model="emailInputText" @keyup="emailValidateInput"
+               :class="{ 'invalid-input': emailIsValid === 'invalid', 'valid-input': emailIsValid === 'valid' }"
+               class="email-input" type="email"
+               placeholder="&#x200A;Example@redberry.ge">
+        <div v-if="emailIsValid === 'invalid'" class="error-message">
+          <img src="../assets/img/img_4.png" alt="error-image">
+          <div class="invalid-email">მეილი უნდა მთავრდებოდეს @redberry.ge-ით</div>
+        </div>
+      </div>
+      <div class="submit-container">
+        <div v-if="submitIsValid === 'valid'" @click="submitData" class="publish publish-available">გამოქვეყნება</div>
+        <div v-else class="publish">გამოქვეყნება</div>
       </div>
     </div>
   </div>
@@ -332,11 +635,12 @@
 
   .publish-container {
     display: flex;
+    justify-content: space-between;
   }
 
   .date-input {
     margin-top: 8px;
-    width: 272px;
+    width: 256px;
     height: 44px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
@@ -351,12 +655,159 @@
     text-indent: 2px;
   }
 
-  .date-input:focus {
+  .date-input:focus, .date-input:active {
     outline: none;
     border: 1px solid #5D37F3;
     box-shadow: 0 0 0 0.5px #5D37F3;
     background: #F7F7FF;
   }
+
+
+
+  /* Categories */
+
+  .categories-container {
+    display: flex;
+    position: relative;
+  }
+
+  .tags-input {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid #E4E3EB;
+    border-radius: 12px;
+    background: #FCFCFD;
+    width: 274px;
+    height: 30px;
+    overflow: hidden;
+  }
+
+  .tags-input-active {
+    outline: none;
+    border: 1px solid #5D37F3;
+    box-shadow: 0 0 0 0.5px #5D37F3;
+    background: #F7F7FF;
+  }
+
+  .remove-tag {
+    margin-left: 8px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+
+
+  .dropdown-button {
+    margin-left: auto;
+    cursor: pointer;
+    border-radius: 0 10px 10px 0;
+    background: transparent;
+    padding: 10px 14.5px 10px 5.5px;
+    position: absolute;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    top: 10px;
+  }
+
+  .dropdown-img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .category-text {
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    line-height: 16px;
+    font-family: 'FiraGO Medium 500', sans-serif;
+    cursor: pointer;
+  }
+
+  .category-text-input {
+    display: flex;
+    padding: 8px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+    line-height: 16px;
+    font-family: 'FiraGO Medium 500', sans-serif;
+    cursor: pointer;
+  }
+
+  .box {
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 254px;
+    //height: 112px;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid #E4E3EB;
+    background: #FFF;
+    box-shadow: 2px 4px 8px 0 rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    scroll-behavior: smooth;
+  }
+
+  .email-input {
+    margin-top: 8px;
+    width: 272px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #E4E3EB;
+    background: #FCFCFD;
+    padding: 0 0 0 16px;
+    text-align: left;
+    line-height: 20px;
+    font-size: 14px;
+  }
+
+  .email-input::placeholder {
+    text-indent: 2px;
+    color: #85858D;
+  }
+
+  .email-input:focus {
+    outline: none;
+    border: 1px solid #5D37F3;
+    box-shadow: 0 0 0 0.5px #5D37F3;
+    background: #F7F7FF;
+  }
+
+  .submit-container {
+    padding: 0 0 65px 312px;
+  }
+
+  .publish {
+    display: flex;
+    margin-top: 40px;
+    width: 248px;
+    padding: 10px 20px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 8px;
+    background: #E4E3EB;
+    color: #FFF;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: 'FiraGO Medium 500', sans-serif;
+  }
+
+  .publish-available {
+    background: #5D37F3;
+    cursor: pointer;
+  }
+
+
+
+
+
+
 
   /* Error */
 
@@ -364,14 +815,10 @@
     color: #EA1919;
   }
 
-  .green {
-    color: #14D81C;
-  }
-
   .invalid-input {
     border: 1px solid #EA1919;
-
     background: #FAF2F3;
+    box-shadow: none;
   }
 
   .invalid-input:focus {
@@ -380,18 +827,40 @@
     background: #FAF2F3;
   }
 
+  .error-message {
+    display: flex;
+    margin-top: 8px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .invalid-email {
+    color: #EA1919;
+    line-height: 20px;
+    font-size: 12px;
+    margin-left: 8px;
+    min-width: 260px;
+  }
+
+  /* Error */
+
+  .green {
+    color: #14D81C;
+  }
+
   .valid-input {
     border: 1px solid #14D81C;
-
     background: #F8FFF8;
+    box-shadow: none;
+
   }
 
   .valid-input:focus {
     border: 1px solid #14D81C;
     box-shadow: none;
-
     background: #F8FFF8;
   }
+
 
 
 </style>

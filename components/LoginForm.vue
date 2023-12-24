@@ -50,9 +50,7 @@ const generateToken = async () => {
 
 
       Cookies.set('authToken', token, { expires: 7, secure: true });
-      document.cookie = `token=${token}; Secure; HttpOnly; SameSite=Strict`;
       console.log('Token generated successfully!');
-      console.log('Token:', token);
       isLoginSuccess.value = true;
     } else {
       throw new Error(`Request failed with status ${response.status}`);

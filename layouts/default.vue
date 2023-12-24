@@ -1,8 +1,10 @@
 <script setup>
+import Cookies from "js-cookie";
+
 const auth = useAuth();
 
 onMounted(() => {
-  const token = useCookie('authToken').value; // or localStorage
+  const token = Cookies.get('authToken');
   auth.value.isAuthenticated = !!token;
 });
 </script>
