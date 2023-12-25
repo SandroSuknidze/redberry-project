@@ -94,27 +94,27 @@ const login = async () => {
     console.log('error sending request', error);
   }
 };
-// token: 2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3
+
 </script>
 
 <template>
   <div v-if="isVisible" class="login-form-modal">
     <div v-if="!isLoginSuccess" class="login-form" :class="loginFormClass">
       <div class="heading">შესვლა</div>
-      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login" alt="close-button">
+      <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
       <div class="label-email">ელ-ფოსტა</div>
       <input v-model="email" type="email" class="input-email" :class="inputClass" placeholder="&#x200A;Example@redberry.ge" required/>
       <div v-if="!isValidEmail" class="error-message">
-        <img src="../assets/img/img_4.png" alt="error-image">
+        <img src="../assets/img/info-circle.svg" alt="error-image">
         <div class="invalid-email">ელ-ფოსტა არ მოიძებნა</div>
       </div>
       <div @click="validateEmail" class="login-button">შესვლა</div>
     </div>
     <div v-else class="login-form" :class="loginFormClass">
-      <img src="../assets/img/img_2.png" alt="success" class="success">
+      <img src="../assets/img/tick-circle.svg" alt="success" class="success">
       <div class="success-text">წარმატებული ავტორიზაცია</div>
       <div @click="$emit('close')" class="success-login-button">კარგი</div>
-      <img src="../assets/img/img_3.png" @click="$emit('close')" class="close-login" alt="close-button">
+      <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
     </div>
   </div>
 </template>

@@ -1,4 +1,10 @@
 <script setup>
+  import axios from "axios";
+  import defaultArrow from '~/assets/img/Arrow.svg';
+  import hoveredArrow from '~/assets/img/Arrow-hover.svg';
+  import activeArrow from '~/assets/img/Arrow-active.svg';
+
+
   definePageMeta({
     layout: 'custom',
     middleware: ['auth'],
@@ -7,6 +13,7 @@
   const runtimeConfig = useRuntimeConfig();
   const token = '2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3';
 
+  const state = ref('');
 
   const fileUploaded = ref(false);
   const uploadedFileName = ref('');
@@ -34,6 +41,8 @@
   const emailIsValid = ref('');
 
   const submitIsValid = ref('');
+
+  const submitSuccess = ref(false);
 
   const authorValidateInput = () => {
     const trimmedInput = authorInputText.value.trim();
@@ -122,32 +131,58 @@
 
   }
 
-  const checkUploadedFile = () => {
-    const fileData = localStorage.getItem('uploadedFile');
-    if (fileData) {
-      const fileMetadata = JSON.parse(fileData);
-      uploadedFileName.value = fileMetadata.image;
-      fileUploaded.value = true;
-    }
-    submitValidation();
 
+  function getBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
   }
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      uploadedFileName.value = file.image;
+      const base64 = await getBase64(file);
+      uploadedFileName.value = file.name;
       fileUploaded.value = true;
-      localStorage.setItem('uploadedFile', JSON.stringify({ image: file.name, type: file.type }));
+
+      localStorage.setItem('uploadedFile', base64);
+      localStorage.setItem('uploadedFileName', file.name);
     }
     submitValidation();
+  }
 
+  const checkUploadedFile = () => {
+    const fileData = localStorage.getItem('uploadedFile');
+    const fileDataName = localStorage.getItem('uploadedFileName');
+    if (fileData) {
+      uploadedFileName.value = fileDataName;
+      fileUploaded.value = true;
+    }
+
+    submitValidation();
+  }
+
+
+  function base64ToBlob(base64, mimeType) {
+    const byteString = atob(base64.split(',')[1]);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const int8Array = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < byteString.length; i++) {
+      int8Array[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([int8Array], { type: mimeType });
   }
 
   const removeFile = () => {
     fileUploaded.value = false;
     uploadedFileName.value = '';
     localStorage.removeItem('uploadedFile');
+    localStorage.removeItem('uploadedFileName');
     submitValidation();
   };
 
@@ -167,7 +202,6 @@
     }
     submitValidation();
   };
-
   onMounted(checkUploadedFile);
   onMounted(() => {
     submitValidation();
@@ -212,6 +246,8 @@
       emailInputText.value = storedEmail;
       emailValidateInput();
     }
+
+    submitValidation();
   });
 
   onUnmounted(() => {
@@ -242,7 +278,8 @@
 
   const submitValidation = () => {
     if (fileUploaded.value === true &&
-        ((isValid.value === titleIsMinLength.value) && (descriptionIsMinLength.value === dateIsValid.value)  && (tagIsValid.value === 'valid'))){
+        ((isValid.value === 'valid' && titleIsMinLength.value === 'valid') &&
+            (descriptionIsMinLength.value === 'valid' && dateIsValid.value === 'valid')  && (tagIsValid.value === 'valid'))){
       submitIsValid.value = 'valid';
     } else {
       submitIsValid.value = 'invalid';
@@ -273,58 +310,40 @@
     formData.append('categories', JSON.stringify(categoryIds));
 
     if (fileUploaded.value) {
-      const fileInput = localStorage.getItem('uploadedFile');
-      formData.append('image', fileInput);
+      const base64Image = localStorage.getItem('uploadedFile');
+      const mimeType = base64Image.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1];
+      const imageBlob = base64ToBlob(base64Image, mimeType);
+      formData.append('image', imageBlob, uploadedFileName.value);
     }
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await axios.post(url, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+          'Accept': "application/json",
+          'Content-Type': 'multipart/form-data'
         },
-        body: formData
       });
+      submitSuccess.value = true;
+      localStorage.clear();
+      console.log('Data submitted successfully:', response.data);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      console.log('Data submitted successfully:', responseData);
     } catch (error) {
       console.error('Error submitting data:', error);
     }
   };
 
+  const getImageSource = computed(() => {
+    switch (state.value) {
+      case 'hover':
+        return hoveredArrow;
+      case 'active':
+        return activeArrow;
+      default:
+        return defaultArrow;
+    }
+  });
 
-
-  // const blogs = ref([]);
-  //
-  // const fetchBlogs = async () => {
-  //   const url = `${runtimeConfig.public.apiBase}/blogs`;
-  //
-  //   try {
-  //     const response = await fetch(url, {
-  //       method: 'GET',
-  //       headers: {
-  //         'Authorization': `Bearer ${token}`,
-  //         'Accept': 'application/json',
-  //       }
-  //     });
-  //
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! Status: ${response.status}`);
-  //     }
-  //
-  //     blogs.value = await response.json();
-  //   } catch (error) {
-  //     console.error('Error fetching blogs:', error);
-  //   }
-  // };
-  //
-  // onMounted(fetchBlogs);
 
 
 </script>
@@ -333,7 +352,11 @@
   <div>
     <div class="header-container">
       <NuxtLink to="/">
-        <img src="../assets/img/img_5.png" alt="arrow" class="arrow">
+        <img :src="getImageSource"
+             @mouseover="state = 'hover'"
+             @mouseleave="state = 'normal'"
+             @mousedown="state = 'active'"
+             alt="arrow" class="arrow">
       </NuxtLink>
       <div class="head-text">ბლოგის დამატება</div>
     </div>
@@ -345,13 +368,13 @@
         <div v-if="!fileUploaded" class="file-not-uploaded" @click="triggerFileInput"
              @drop.prevent="handleDrop">
           <input type="file" id="file-upload" @change="handleFileUpload" hidden/>
-          <img src="../assets/img/photo_placeholder.png" alt="photo-placeholder" class="upload-icon"/>
+          <img src="../assets/img/folder-add.svg" alt="photo-placeholder" class="upload-icon"/>
           <div class="inside-text">ჩააგდეთ ფაილი აქ ან <span class="inside-text-span">აირჩიეთ ფაილი</span></div>
         </div>
         <div v-else class="uploaded-file-photo">
-          <img src="../assets/img/uploaded_photo_placeholder.png" alt="uploaded-photo-placeholder"
+          <img src="../assets/img/gallery.svg" alt="uploaded-photo-placeholder"
                class="uploaded-icon"> {{ uploadedFileName }}
-          <img src="../assets/img/img_3.png" alt="close-button" @click="removeFile" class="close-button">
+          <img src="../assets/img/add.svg" alt="close-button" @click="removeFile" class="close-button">
         </div>
       </div>
       <div class="author-container">
@@ -402,12 +425,12 @@
               <div v-for="(tag, index) in tags" :key="index" class="category-text-input"
                    :style="{ backgroundColor: tag.background_color, color: tag.text_color }">
                 {{ tag.title }}
-                <span class="remove-tag" @click="removeTag(index)"><img src="../assets/img/close_button_white.png"
+                <span class="remove-tag" @click="removeTag(index)"><img src="../assets/img/white-close.svg"
                                                                         alt="delete" class="delete-button"></span>
               </div>
             </div>
             <div class="dropdown-button" @click="toggleDropdown">
-              <img src="../assets/img/arrow_down.png" alt="arrow-down" class="dropdown-img">
+              <img src="../assets/img/arrow-down.svg" alt="arrow-down" class="dropdown-img">
             </div>
           </div>
           <div v-if="dropdownVisible">
@@ -432,7 +455,7 @@
                class="email-input" type="email"
                placeholder="&#x200A;Example@redberry.ge">
         <div v-if="emailIsValid === 'invalid'" class="error-message">
-          <img src="../assets/img/img_4.png" alt="error-image">
+          <img src="../assets/img/info-circle.svg" alt="error-image">
           <div class="invalid-email">მეილი უნდა მთავრდებოდეს @redberry.ge-ით</div>
         </div>
       </div>
@@ -441,16 +464,93 @@
         <div v-else class="publish">გამოქვეყნება</div>
       </div>
     </div>
+
+
+
+    <div v-if="submitSuccess" class="success-form-modal">
+      <div class="success-form">
+        <img src="../assets/img/tick-circle.svg" alt="success" class="success">
+        <div class="success-text">ჩანაწერი წარმატებით დაემატა</div>
+        <NuxtLink to="/">
+          <div class="success-login-button">მთავარ გვერდზე დაბრუნება</div>
+        </NuxtLink>
+        <NuxtLink to="/">
+          <img src="../assets/img/add.svg" class="close-login" alt="close-button">
+        </NuxtLink>
+      </div>
+    </div>
+
+
   </div>
 </template>
 
 <style scoped>
+
+  .success-form-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .success-form{
+    background-color: white;
+    padding: 0 24px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 432px;
+    height: 300px;
+    position: relative;
+  }
+
+  .success-text {
+    color: #1A1A1F;
+    margin-top: 16px;
+    font-family: 'FiraGO Bold 700', sans-serif;
+    line-height: 28px;
+    font-size: 20px;
+    width: 290px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .success-login-button {
+    cursor: pointer;
+    width: 100%;
+    color: white;
+    background: #5D37F3;
+    border-radius: 8px;
+    padding: 10px 0;
+    font-size: 14px;
+    line-height: 20px;
+    margin-top: 48px;
+  }
+
+  .success {
+    margin-top: 64px;
+  }
+
+  .close-login {
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    cursor: pointer;
+  }
 
   .header-container {
     display: flex;
     align-items: center;
     margin-top: 40px;
     padding-left: 76px;
+    height: 44px;
   }
 
   .form-container {
@@ -500,6 +600,10 @@
     cursor: pointer;
   }
 
+  .file-not-uploaded:hover {
+    background: #F1EFFB;
+  }
+
   .upload-icon {
     margin-top: 48px;
     padding: 0 280px;
@@ -514,9 +618,19 @@
   .close-button {
     width: 24px;
     height: 24px;
-    padding: 16px 16px 16px 0;
+    padding: 8px;
     cursor: pointer;
     margin-left: auto;
+    margin-right: 8px;
+    border-radius: 30px;
+  }
+
+  .close-button:hover {
+    background: #F5F4F9;
+  }
+
+  .close-button:active {
+    background: #EBEAEF;
   }
 
   .inside-text {
@@ -548,8 +662,8 @@
 
   .author-input {
     margin-top: 8px;
-    width: 272px;
-    height: 44px;
+    width: 270px;
+    height: 42px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
@@ -613,13 +727,13 @@
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
-    width: 584px;
-    height: 124px;
+    width: 582px;
+    height: 110px;
     resize: none;
     padding: 12px 0 0 16px;
     font-size: 14px;
     line-height: 20px;
-    color: #85858D;
+    color: #1A1A1F;
   }
 
   .custom-textarea:focus {
@@ -640,8 +754,8 @@
 
   .date-input {
     margin-top: 8px;
-    width: 256px;
-    height: 44px;
+    width: 254px;
+    height: 42px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
@@ -738,6 +852,7 @@
   }
 
   .box {
+    position: absolute;
     padding: 16px;
     display: flex;
     flex-wrap: wrap;
@@ -755,8 +870,8 @@
 
   .email-input {
     margin-top: 8px;
-    width: 272px;
-    height: 44px;
+    width: 270px;
+    height: 42px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
@@ -801,6 +916,22 @@
   .publish-available {
     background: #5D37F3;
     cursor: pointer;
+  }
+
+  .publish-available:hover {
+    background: #512BE7;
+  }
+
+  .publish-available:active {
+    background: #4721DD;
+  }
+
+  input:hover, textarea:hover {
+    background: #F9F9FA;
+  }
+
+  .tags-input:hover {
+    background: #F9F9FA;
   }
 
 

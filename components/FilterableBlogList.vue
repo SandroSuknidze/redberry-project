@@ -5,25 +5,34 @@ const selectedCategory = ref(null);
 const runtimeConfig = useRuntimeConfig()
 
 const categories = ref([]);
+const token = '2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3';
 
 const filterBlogs = (category) => {
   selectedCategory.value = category;
 }
 
-// const fetchData = async () => {
-//   try {
-//     const response = await fetch(`${runtimeConfig.public.apiBase}/blogs`, {
-//       method: 'GET',
-//       headers: {
-//         'Accept': 'application/json',
-//       }
-//     });
-//     console.log(response);
-//     blogs.value = await response.json();
-//   } catch (error) {
-//     console.error('Error fetching data:', error);
-//   }
-// };
+const fetchBlogs = async () => {
+  const url = `${runtimeConfig.public.apiBase}/blogs`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    blogs.value = await response.json();
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
+  }
+};
+
 
 const fetchCategories = async () => {
   try {
@@ -35,7 +44,6 @@ const fetchCategories = async () => {
     });
     if (response.ok) {
       categories.value = await response.json();
-      console.log('Categories data:', categories);
     } else {
       console.error('Error fetching categories:', response.statusText);
     }
@@ -45,6 +53,7 @@ const fetchCategories = async () => {
 };
 onMounted(() => {
   fetchCategories();
+  fetchBlogs();
 });
 </script>
 
