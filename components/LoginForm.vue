@@ -212,6 +212,7 @@ const login = async () => {
   font-size: 14px;
   line-height: 20px;
   margin-top: 48px;
+  font-family: 'FiraGO Medium 500', sans-serif;
 }
 
 .close-login {

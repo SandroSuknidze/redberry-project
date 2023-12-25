@@ -5,7 +5,7 @@
 <template>
   <div>
     <div class="nav">
-      <img src="../assets/img/img.png" alt="logo" class="logo">
+      <img src="../assets/img/logo.svg" alt="logo" class="logo">
     </div>
   </div>
 

@@ -19,7 +19,7 @@ const auth = useAuth();
 <template>
   <div>
     <div class="nav">
-      <img src="../assets/img/img.png" alt="logo" class="logo">
+      <img src="../assets/img/logo.svg" alt="logo" class="logo">
       <div v-if="!auth.isAuthenticated" @click="toggleLoginForm" class="login"><div class="text">შესვლა</div></div>
       <NuxtLink v-else to="/create-blog" class="add-blog">დაამატე ბლოგი</NuxtLink>
     </div>
@@ -56,6 +56,8 @@ const auth = useAuth();
 
   .text {
     font-size: 14px;
+    font-family: 'FiraGO Medium 500', sans-serif;
+    line-height: 20px;
   }
 
   .add-blog {
@@ -65,5 +67,7 @@ const auth = useAuth();
     color: white;
     cursor: pointer;
     text-decoration: none;
+    font-family: 'FiraGO Medium 500', sans-serif;
+    line-height: 20px;
   }
 </style>

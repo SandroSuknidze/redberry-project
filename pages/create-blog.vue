@@ -17,6 +17,8 @@
 
   const fileUploaded = ref(false);
   const uploadedFileName = ref('');
+  const errorMessage = ref('');
+
 
   const authorInputText = ref('');
   const isMinLength = ref('');
@@ -124,7 +126,8 @@
   };
 
   const emailValidateInput = () => {
-    emailIsValid.value = emailInputText.value.endsWith('@redberry.ge') ? 'valid' : 'invalid';
+    const emailRegex = /^[^\s@]+@redberry\.ge$/;
+    emailIsValid.value = emailRegex.test(emailInputText.value) ? 'valid' : 'invalid';
 
     localStorage.setItem('email', emailInputText.value);
     submitValidation();
@@ -142,6 +145,22 @@
   }
 
   const handleFileUpload = async (event) => {
+    const files = event.target.files;
+    if (!files.length) {
+      errorMessage.value = 'აირჩიეთ ფოტო';
+      return;
+    }
+
+    const fileCheck = files[0];
+    console.log(fileCheck);
+    if (!fileCheck.type.startsWith('image/')) {
+      errorMessage.value = 'არასწორი ფოტოს ტიპი';
+      return;
+    }
+
+    errorMessage.value = '';
+
+
     const file = event.target.files[0];
     if (file) {
       const base64 = await getBase64(file);
@@ -304,7 +323,7 @@
     formData.append('description', descriptionInputText.value);
     formData.append('author', authorInputText.value);
     formData.append('publish_date', dateInputText.value);
-    formData.append('email', emailInputText.value);
+    formData.append('email', emailIsValid.value === 'valid' ? emailInputText.value : '');
 
     const categoryIds = tags.value.map(tag => tag.id);
     formData.append('categories', JSON.stringify(categoryIds));
@@ -375,6 +394,9 @@
           <img src="../assets/img/gallery.svg" alt="uploaded-photo-placeholder"
                class="uploaded-icon"> {{ uploadedFileName }}
           <img src="../assets/img/add.svg" alt="close-button" @click="removeFile" class="close-button">
+        </div>
+        <div v-if="errorMessage !== ''" class="error-image">
+          {{ errorMessage }}
         </div>
       </div>
       <div class="author-container">
@@ -515,9 +537,6 @@
     font-family: 'FiraGO Bold 700', sans-serif;
     line-height: 28px;
     font-size: 20px;
-    width: 290px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .success-login-button {
@@ -963,6 +982,13 @@
     margin-top: 8px;
     width: 20px;
     height: 20px;
+  }
+
+  .error-image {
+    color: #EA1919;
+    font-size: 12px;
+    line-height: 20px;
+    margin-top: 8px;
   }
 
   .invalid-email {

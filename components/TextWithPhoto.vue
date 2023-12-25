@@ -8,7 +8,7 @@
       <p>ბლოგი</p>
     </div>
     <div class="photo-container">
-      <img src="../assets/img/img_1.png" alt="photo" class="photo">
+      <img src="../assets/img/banner.svg" alt="photo" class="photo">
     </div>
   </div>
 </template>
