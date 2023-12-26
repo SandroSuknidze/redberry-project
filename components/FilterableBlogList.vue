@@ -13,12 +13,14 @@ setInterval(() => {
   now.value = new Date();
 }, 60000);
 
-const toggleCategory = (category) => {
-  const index = selectedCategories.value.indexOf(category);
+const toggleCategory = (categoryTitle) => {
+  console.log(categoryTitle);
+  const index = selectedCategories.value.indexOf(categoryTitle);
+
   if (index > -1) {
     selectedCategories.value.splice(index, 1);
   } else {
-    selectedCategories.value.push(category);
+    selectedCategories.value.push(categoryTitle);
   }
 }
 
@@ -26,11 +28,7 @@ const filteredBlogs = computed(() => {
   if (selectedCategories.value.length === 0) {
     return blogs.value;
   }
-  return blogs.value.filter(blog =>
-      selectedCategories.value.some(category =>
-          blog.categories.includes(category)
-      )
-  );
+  return blogs.value.filter(blog => blog.categories.some(category => selectedCategories.value.includes(category.title)));
 });
 
 const fetchBlogs = async () => {
@@ -49,7 +47,8 @@ const fetchBlogs = async () => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    blogs.value = await response.json();
+    const responseData = await response.json();
+    blogs.value = responseData.data;
     console.log(blogs.value)
   } catch (error) {
     console.error('Error fetching blogs:', error);
@@ -95,7 +94,8 @@ onMounted(() => {
     <div class="filterable-blog-list">
       <div v-for="categoryGroup in categories" class="categories-scroll-container">
         <div v-for="category in categoryGroup" :key="category.id" class="category-container">
-          <div @click="toggleCategory(category)"
+          <div @click="toggleCategory(category.title)"
+               :class="{ 'selected-category': selectedCategories.includes(category.title) }"
                :style="{ backgroundColor: category.background_color, color: category.text_color }"
                class="category-text">
             {{ category.title }}
@@ -103,13 +103,13 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div v-for="blogs in filteredBlogs" class="blogs-container">
-      <div v-for="blog in blogs" :key="blog.id">
+    <div class="blogs-container">
+      <div v-for="blog in filteredBlogs" :key="blog.id">
         <div v-if="new Date(blog.publish_date) < now" class="blog-item">
           <img :src="blog.image" alt="image" class="blog-image">
           <div class="blog-author">{{ blog.author }}</div>
           <div class="publish-date">{{ formatDate(blog.publish_date) }}</div>
-          <div class="blog-title">{{ blog.title }}</div>
+          <div class="blog-title"><p class="line-clamp-2">{{ blog.title }}</p></div>
           <div class="categories">
             <div v-for="category in blog.categories" class="category-container-blog">
               <div :style="{ backgroundColor: category.background_color, color: category.text_color }"
@@ -119,9 +119,9 @@ onMounted(() => {
             </div>
           </div>
           <div class="blog-description">
-            {{ blog.description }}
+            <p class="line-clamp-2">{{ blog.description }}</p>
           </div>
-          <NuxtLink to="/">
+          <NuxtLink :to="`/blogs/${blog.id}`">
             <div class="blog-view-container">
               <div class="blog-view">სრულად ნახვა</div>
               <img src="~/assets/img/Arrow-purple.svg" alt="arrow-purple" class="blog-arrow">
@@ -134,6 +134,13 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.selected-category {
+  border-radius: 30px;
+  border: 1px solid #000;
+  background: #EEE1F7;
+  padding: 7px 15px !important;
+}
+
 .blog-arrow {
   margin-left: 4px;
 }
@@ -170,6 +177,7 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 16px;
 }
 
 .blog-title {
@@ -179,6 +187,7 @@ onMounted(() => {
   line-height: 28px;
   font-family: 'FiraGO Medium 500', sans-serif;
   height: 56px;
+  word-wrap: break-word;
 }
 
 .publish-date {
@@ -240,6 +249,14 @@ onMounted(() => {
   line-height: 16px;
   font-family: 'FiraGO Medium 500', sans-serif;
   cursor: pointer;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
 }
 
 

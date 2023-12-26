@@ -330,6 +330,7 @@
     if (submitIsValid.value !== 'valid') {
       return;
     }
+    submitIsValid.value = '';
 
     const url = `${runtimeConfig.public.apiBase}/blogs`;
     const formData = new FormData();

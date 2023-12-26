@@ -3,32 +3,27 @@ import { ref } from 'vue';
 import Cookies from 'js-cookie';
 
 const email = ref('');
-const isValidEmail = ref(true);
+const isValidEmail = ref('');
 const isVisible = ref(true);
 const isLoginSuccess = ref(false);
+const isSubmitValid = ref(false);
 const auth = useAuth();
-
-const inputClass = ref(['']);
-const loginFormClass = ref(['']);
 
 
 const runtimeConfig = useRuntimeConfig()
 
 const validateEmail = () => {
   const isNotEmpty = email.value.trim() !== '';
-  const isValidFormat = email.value.endsWith('@redberry.ge');
+  const emailRegex = /^[^\s@]+@redberry\.ge$/;
+  const isValidFormat = emailRegex.test(email.value);
 
-  if (isValidFormat && isNotEmpty) {
-    isValidEmail.value = true;
-    login();
-    inputClass.value.pop();
-    loginFormClass.value.pop();
+  if(!isValidFormat || !isNotEmpty) {
+    isValidEmail.value = 'invalid';
+    isSubmitValid.value = false;
+
   } else {
-    isValidEmail.value = false;
-    if (!inputClass.value.includes('input-email-red')) {
-      inputClass.value.push('input-email-red');
-      loginFormClass.value.push('login-form-big');
-    }
+      isValidEmail.value = 'valid';
+      isSubmitValid.value = true;
   }
 }
 
@@ -61,9 +56,11 @@ const generateToken = async () => {
 };
 
 const login = async () => {
-  if (!isValidEmail.value) {
+  if (isValidEmail.value === 'invalid') {
     return;
   }
+
+  isSubmitValid.value = false;
 
   try {
     const response = await fetch(`${runtimeConfig.public.apiBase}/login`, {
@@ -80,14 +77,10 @@ const login = async () => {
     if (response.ok) {
       await generateToken();
       auth.value.isAuthenticated = true;
-      loginFormClass.value.push('login-form-big');
 
     } else {
-      isValidEmail.value = false;
-      if (!inputClass.value.includes('input-email-red')) {
-        inputClass.value.push('input-email-red');
-        loginFormClass.value.push('login-form-big');
-      }
+      isValidEmail.value = 'invalid';
+      isSubmitValid.value = false;
       throw new Error(`Request failed with status ${response.status}`);
     }
   } catch (error) {
@@ -99,22 +92,27 @@ const login = async () => {
 
 <template>
   <div v-if="isVisible" class="login-form-modal">
-    <div v-if="!isLoginSuccess" class="login-form" :class="loginFormClass">
+    <div v-if="!isLoginSuccess" class="login-form" :class="{ 'login-form-big': isValidEmail === 'invalid' }">
       <div class="heading">შესვლა</div>
       <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
       <div class="label-email">ელ-ფოსტა</div>
-      <input v-model="email" type="email" class="input-email" :class="inputClass" placeholder="&#x200A;Example@redberry.ge" required/>
-      <div v-if="!isValidEmail" class="error-message">
+      <input v-model="email" @keyup="validateEmail" type="email" class="input-email" :class="{ 'input-email-red': isValidEmail === 'invalid'}" placeholder="&#x200A;Example@redberry.ge" required/>
+      <div v-if="isValidEmail === 'invalid'" class="error-message">
         <img src="../assets/img/info-circle.svg" alt="error-image">
         <div class="invalid-email">ელ-ფოსტა არ მოიძებნა</div>
       </div>
-      <div @click="validateEmail" class="login-button">შესვლა</div>
+      <div v-if="isSubmitValid" @click="login" class="login-button">შესვლა</div>
+      <div v-else class="login-button-invalid">შესვლა</div>
     </div>
-    <div v-else class="login-form" :class="loginFormClass">
+    <div v-else class="login-form login-form-big">
       <img src="../assets/img/tick-circle.svg" alt="success" class="success">
       <div class="success-text">წარმატებული ავტორიზაცია</div>
-      <div @click="$emit('close')" class="success-login-button">კარგი</div>
-      <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
+      <NuxtLink to="/">
+        <div @click="$emit('close')" class="success-login-button">კარგი</div>
+      </NuxtLink>
+      <NuxtLink to="/">
+        <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -187,6 +185,19 @@ const login = async () => {
   line-height: 20px;
   margin-top: 24px;
 }
+
+.login-button-invalid {
+  width: 100%;
+  color: white;
+  background: #E4E3EB;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 20px;
+  margin-top: 24px;
+}
+
+
 
 .success {
   width: 64px;
