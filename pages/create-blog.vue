@@ -152,7 +152,6 @@
     }
 
     const fileCheck = files[0];
-    console.log(fileCheck);
     if (!fileCheck.type.startsWith('image/')) {
       errorMessage.value = 'არასწორი ფოტოს ტიპი';
       return;
@@ -210,15 +209,31 @@
   };
 
   const handleDrop = (event) => {
+    event.preventDefault();
+
     const files = event.dataTransfer.files;
-    processFile(files[0]);
+    if (!files.length) {
+      errorMessage.value = 'აირჩიეთ ფოტო';
+      return;
+    }
+
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      errorMessage.value = 'არასწორი ფოტოს ტიპი';
+      return;
+    }
+
+    processFile(file);
   };
 
-  const processFile = (file) => {
-    if (file) {
-      uploadedFileName.value = file.image;
-      fileUploaded.value = true;
-    }
+  const processFile = async (file) => {
+    uploadedFileName.value = file.name;
+    fileUploaded.value = true;
+
+    const base64 = await getBase64(file);
+    localStorage.setItem('uploadedFile', base64);
+    localStorage.setItem('uploadedFileName', file.name);
+
     submitValidation();
   };
   onMounted(checkUploadedFile);
@@ -298,7 +313,8 @@
   const submitValidation = () => {
     if (fileUploaded.value === true &&
         ((isValid.value === 'valid' && titleIsMinLength.value === 'valid') &&
-            (descriptionIsMinLength.value === 'valid' && dateIsValid.value === 'valid')  && (tagIsValid.value === 'valid'))){
+            (descriptionIsMinLength.value === 'valid' && dateIsValid.value === 'valid')  && (tagIsValid.value === 'valid')
+              && (emailIsValid.value === 'valid' || emailInputText.value.trim() === ''))){
       submitIsValid.value = 'valid';
     } else {
       submitIsValid.value = 'invalid';
@@ -312,7 +328,6 @@
 
   const submitData = async () => {
     if (submitIsValid.value !== 'valid') {
-      console.error('Validation failed. Submission aborted.');
       return;
     }
 
@@ -385,8 +400,9 @@
       </div>
       <div class="upload-container">
         <div v-if="!fileUploaded" class="file-not-uploaded" @click="triggerFileInput"
+             @dragover.prevent
              @drop.prevent="handleDrop">
-          <input type="file" id="file-upload" @change="handleFileUpload" hidden/>
+          <input type="file" id="file-upload" @change="handleFileUpload" @cancel="handleFileUpload" hidden/>
           <img src="../assets/img/folder-add.svg" alt="photo-placeholder" class="upload-icon"/>
           <div class="inside-text">ჩააგდეთ ფაილი აქ ან <span class="inside-text-span">აირჩიეთ ფაილი</span></div>
         </div>
@@ -446,12 +462,14 @@
             <div class="tags-input" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
               <div v-for="(tag, index) in tags" :key="index" class="category-text-input"
                    :style="{ backgroundColor: tag.background_color, color: tag.text_color }">
-                {{ tag.title }}
+                <div class="tag-title">
+                  {{ tag.title }}
+                </div>
                 <span class="remove-tag" @click="removeTag(index)"><img src="../assets/img/white-close.svg"
                                                                         alt="delete" class="delete-button"></span>
               </div>
             </div>
-            <div class="dropdown-button" @click="toggleDropdown">
+            <div class="dropdown-button" @click="toggleDropdown" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
               <img src="../assets/img/arrow-down.svg" alt="arrow-down" class="dropdown-img">
             </div>
           </div>
@@ -486,8 +504,6 @@
         <div v-else class="publish">გამოქვეყნება</div>
       </div>
     </div>
-
-
 
     <div v-if="submitSuccess" class="success-form-modal">
       <div class="success-form">
@@ -807,7 +823,7 @@
   .tags-input {
     margin-top: 8px;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     padding: 6px;
     border: 1px solid #E4E3EB;
@@ -840,10 +856,11 @@
     background: transparent;
     padding: 10px 14.5px 10px 5.5px;
     position: absolute;
-    right: 0;
+    right: 1px;
     width: 20px;
     height: 20px;
     top: 10px;
+    border: 0 !important;
   }
 
   .dropdown-img {
@@ -885,6 +902,10 @@
     box-shadow: 2px 4px 8px 0 rgba(0, 0, 0, 0.08);
     overflow: hidden;
     scroll-behavior: smooth;
+  }
+
+  .tag-title {
+    white-space: nowrap;
   }
 
   .email-input {

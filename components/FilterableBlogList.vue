@@ -5,8 +5,13 @@ const selectedCategories = ref([]);
 const runtimeConfig = useRuntimeConfig()
 
 const categories = ref([]);
+const now = ref(new Date());
 const token = '2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3';
 
+
+setInterval(() => {
+  now.value = new Date();
+}, 60000);
 
 const toggleCategory = (category) => {
   const index = selectedCategories.value.indexOf(category);
@@ -99,29 +104,30 @@ onMounted(() => {
       </div>
     </div>
     <div v-for="blogs in filteredBlogs" class="blogs-container">
-      <div v-for="blog in blogs" :key="blog.id" class="blog-item">
-        <img :src="blog.image" alt="image" class="blog-image">
-        <div class="blog-author">{{ blog.author }}</div>
-        <div class="publish-date">{{ formatDate(blog.publish_date) }}</div>
-        <div class="blog-title">{{ blog.title }}</div>
-        <div class="categories">
-          <div v-for="category in blog.categories" class="category-container-blog">
-            <div :style="{ backgroundColor: category.background_color, color: category.text_color }"
-                 class="category-text">
-              {{ category.title }}
+      <div v-for="blog in blogs" :key="blog.id">
+        <div v-if="new Date(blog.publish_date) < now" class="blog-item">
+          <img :src="blog.image" alt="image" class="blog-image">
+          <div class="blog-author">{{ blog.author }}</div>
+          <div class="publish-date">{{ formatDate(blog.publish_date) }}</div>
+          <div class="blog-title">{{ blog.title }}</div>
+          <div class="categories">
+            <div v-for="category in blog.categories" class="category-container-blog">
+              <div :style="{ backgroundColor: category.background_color, color: category.text_color }"
+                   class="category-text">
+                {{ category.title }}
+              </div>
             </div>
           </div>
-        </div>
-        <div class="blog-description">
-          {{ blog.description }}
-        </div>
-        <NuxtLink to="/">
-          <div class="blog-view-container">
+          <div class="blog-description">
+            {{ blog.description }}
+          </div>
+          <NuxtLink to="/">
+            <div class="blog-view-container">
               <div class="blog-view">სრულად ნახვა</div>
               <img src="~/assets/img/Arrow-purple.svg" alt="arrow-purple" class="blog-arrow">
-          </div>
-        </NuxtLink>
-
+            </div>
+          </NuxtLink>
+        </div>
       </div>
     </div>
   </div>
