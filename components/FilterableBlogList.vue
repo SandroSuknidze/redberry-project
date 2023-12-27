@@ -14,7 +14,6 @@ setInterval(() => {
 }, 60000);
 
 const toggleCategory = (categoryTitle) => {
-  console.log(categoryTitle);
   const index = selectedCategories.value.indexOf(categoryTitle);
 
   if (index > -1) {
@@ -22,6 +21,8 @@ const toggleCategory = (categoryTitle) => {
   } else {
     selectedCategories.value.push(categoryTitle);
   }
+
+  localStorage.setItem('selectedCategories', JSON.stringify(selectedCategories.value));
 }
 
 const filteredBlogs = computed(() => {
@@ -86,6 +87,10 @@ const formatDate = (dateString) => {
 onMounted(() => {
   fetchCategories();
   fetchBlogs();
+  const savedFilters = localStorage.getItem('selectedCategories');
+  if (savedFilters) {
+    selectedCategories.value = JSON.parse(savedFilters);
+  }
 });
 </script>
 
@@ -112,8 +117,8 @@ onMounted(() => {
           <div class="blog-title"><p class="line-clamp-2">{{ blog.title }}</p></div>
           <div class="categories">
             <div v-for="category in blog.categories" class="category-container-blog">
-              <div :style="{ backgroundColor: category.background_color, color: category.text_color }"
-                   class="category-text">
+              <div :style="{ backgroundColor: category.background_color, color: category.text_color}"
+                   class="category-text cursor-default">
                 {{ category.title }}
               </div>
             </div>
@@ -222,6 +227,7 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   padding: 64px 76px 0 76px;
+  justify-content: center;
 }
 
 .filterable-blog-list {
@@ -249,6 +255,10 @@ onMounted(() => {
   line-height: 16px;
   font-family: 'FiraGO Medium 500', sans-serif;
   cursor: pointer;
+}
+
+.cursor-default {
+  cursor: default;
 }
 
 .line-clamp-2 {

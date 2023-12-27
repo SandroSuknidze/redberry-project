@@ -339,7 +339,9 @@
     formData.append('description', descriptionInputText.value);
     formData.append('author', authorInputText.value);
     formData.append('publish_date', dateInputText.value);
-    formData.append('email', emailIsValid.value === 'valid' ? emailInputText.value : '');
+    if(emailIsValid.value === 'valid') {
+      formData.append('email', emailInputText.value);
+    }
 
     const categoryIds = tags.value.map(tag => tag.id);
     formData.append('categories', JSON.stringify(categoryIds));
@@ -397,7 +399,7 @@
     </div>
     <div class="form-container">
       <div class="img-label">
-        ატვირთეთ ფოტო
+        ატვირთეთ ფოტო *
       </div>
       <div class="upload-container">
         <div v-if="!fileUploaded" class="file-not-uploaded" @click="triggerFileInput"
@@ -458,7 +460,7 @@
                  :class="{ 'invalid-input': dateIsValid === 'invalid', 'valid-input': dateIsValid === 'valid'}">
         </div>
         <div>
-          <div class="author-label">კატეგორია</div>
+          <div class="author-label">კატეგორია *</div>
           <div class="categories-container">
             <div class="tags-input" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
               <div v-for="(tag, index) in tags" :key="index" class="category-text-input"
@@ -585,13 +587,13 @@
     display: flex;
     align-items: center;
     margin-top: 40px;
-    padding-left: 76px;
+    padding-left: 376px;
     height: 44px;
   }
 
   .form-container {
     width: 600px;
-    padding-left: 360px;
+    padding-left: 660px;
   }
 
   .arrow {
@@ -862,6 +864,7 @@
     height: 20px;
     top: 10px;
     border: 0 !important;
+    box-shadow: none !important;
   }
 
   .dropdown-img {
@@ -1038,6 +1041,20 @@
     border: 1px solid #14D81C;
     box-shadow: none;
     background: #F8FFF8;
+  }
+
+
+  .tags-input::-webkit-scrollbar {
+    width: 5px; /* width of the vertical scrollbar */
+    height: 5px; /* height of the horizontal scrollbar */
+  }
+
+  .tags-input::-webkit-scrollbar-thumb {
+    background: blue; /* color of the scrollbar itself */
+  }
+
+  .tags-input::-webkit-scrollbar-track {
+    background: grey; /* color of the scrollbar track */
   }
 
 
