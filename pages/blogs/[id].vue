@@ -199,8 +199,9 @@ const getImageSource = computed(() => {
 .arrow {
   width: 44px;
   height: 44px;
-  margin-left: 76px;
+  margin-left: 376px;
   margin-top: 40px;
+  position: absolute;
 }
 
 .svg-container-previous-disabled {
@@ -293,12 +294,13 @@ const getImageSource = computed(() => {
 
 
 .related-blogs-section {
-  padding: 0 376px;
+  padding: 0 307.5px;
 }
 .blogs-slider {
   display: flex;
   width: 100%;
   justify-content: center;
+  gap: 32px;
 }
 
 .blog-arrow {
@@ -374,7 +376,6 @@ const getImageSource = computed(() => {
 
 .blog-item {
   width: 408px;
-  margin-right: 32px;
   padding-bottom: 56px;
 }
 
