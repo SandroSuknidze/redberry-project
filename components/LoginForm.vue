@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 
 const email = ref('');
 const isValidEmail = ref('');
+const isValidEmailFormat = ref('');
 const isVisible = ref(true);
 const isLoginSuccess = ref(false);
 const isSubmitValid = ref(false);
@@ -17,11 +18,16 @@ const validateEmail = () => {
   const emailRegex = /^[^\s@]+@redberry\.ge$/;
   const isValidFormat = emailRegex.test(email.value);
 
-  if(!isValidFormat || !isNotEmpty) {
+  if(!isValidFormat) {
+    isValidEmailFormat.value = 'invalid';
+    isSubmitValid.value = false;
+  }
+  else if(!isNotEmpty) {
     isValidEmail.value = 'invalid';
     isSubmitValid.value = false;
 
   } else {
+      isValidEmailFormat.value = 'valid';
       isValidEmail.value = 'valid';
       isSubmitValid.value = true;
   }
@@ -92,12 +98,17 @@ const login = async () => {
 
 <template>
   <div v-if="isVisible" class="login-form-modal">
-    <div v-if="!isLoginSuccess" class="login-form" :class="{ 'login-form-big': isValidEmail === 'invalid' }">
+    <div v-if="!isLoginSuccess" class="login-form" :class="{ 'login-form-big': isValidEmail === 'invalid' || isValidEmailFormat === 'invalid' }">
       <div class="heading">შესვლა</div>
       <img src="../assets/img/add.svg" @click="$emit('close')" class="close-login" alt="close-button">
       <div class="label-email">ელ-ფოსტა</div>
-      <input v-model="email" @keyup="validateEmail" type="email" class="input-email" :class="{ 'input-email-red': isValidEmail === 'invalid'}" placeholder="&#x200A;Example@redberry.ge" required/>
-      <div v-if="isValidEmail === 'invalid'" class="error-message">
+      <input v-model="email" @keyup="validateEmail" type="email" class="input-email" :class="{ 'input-email-red': isValidEmail === 'invalid' || isValidEmailFormat === 'invalid'}" placeholder="&#x200A;Example@redberry.ge" required/>
+
+      <div v-if="isValidEmailFormat === 'invalid'" class="error-message">
+        <img src="../assets/img/info-circle.svg" alt="error-image">
+        <div class="invalid-email">არასწორი ელ-ფოსტის ფორმატი</div>
+      </div>
+      <div v-else-if="isValidEmail === 'invalid'" class="error-message">
         <img src="../assets/img/info-circle.svg" alt="error-image">
         <div class="invalid-email">ელ-ფოსტა არ მოიძებნა</div>
       </div>
