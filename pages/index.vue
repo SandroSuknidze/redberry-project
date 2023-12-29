@@ -8,10 +8,6 @@
 </template>
 
 <style >
-  body {
-    background: #F3F2FA;
-  }
-
   a {
     text-decoration: none;
   }

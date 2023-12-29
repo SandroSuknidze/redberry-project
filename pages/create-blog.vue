@@ -417,6 +417,14 @@
     }
   });
 
+
+  onMounted(() => {
+    document.body.classList.add('blog-page');
+  });
+
+  onBeforeUnmount(() => {
+    document.body.classList.remove('blog-page');
+  });
 </script>
 
 <template>

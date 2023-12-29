@@ -100,7 +100,7 @@ onMounted(async () => {
   await fetchBlogData();
 });
 onMounted(() => {
-  document.body.style.backgroundColor = '#FBFAFF';
+  document.body.style.backgroundColor = '#F3F2FA';
 });
 
 onUnmounted(() => {
