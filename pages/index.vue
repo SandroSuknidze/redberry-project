@@ -1,12 +1,10 @@
 <script setup>
-// definePageMeta({
-//   middleware: ['custom-auth'],
-// })
+
 </script>
 
 <template>
-  <TextWithPhoto />
-  <FilterableBlogList />
+    <TextWithPhoto />
+    <FilterableBlogList />
 </template>
 
 <style >

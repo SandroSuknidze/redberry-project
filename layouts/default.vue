@@ -1,6 +1,7 @@
 <script setup>
 import Cookies from "js-cookie";
 
+
 const auth = useAuth();
 
 onMounted(() => {
@@ -10,10 +11,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
     <app-header />
     <slot />
-  </div>
 </template>
 
 <style scoped>

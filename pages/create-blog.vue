@@ -383,6 +383,40 @@
 
 
 
+
+  const tagsInputEl = ref(null);
+  let isDragging = false;
+  let startX;
+  let scrollLeft;
+
+  const startDrag = (e) => {
+    isDragging = true;
+    startX = e.pageX - tagsInputEl.value.offsetLeft;
+    scrollLeft = tagsInputEl.value.scrollLeft;
+  };
+
+  const endDrag = () => {
+    isDragging = false;
+  };
+
+  const onDrag = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - tagsInputEl.value.offsetLeft;
+    const walk = (x - startX);
+    tagsInputEl.value.scrollLeft = scrollLeft - walk;
+  };
+
+  onMounted(() => {
+    const el = tagsInputEl.value;
+    if (el) {
+      el.addEventListener('mousedown', startDrag);
+      el.addEventListener('mouseup', endDrag);
+      el.addEventListener('mouseleave', endDrag);
+      el.addEventListener('mousemove', onDrag);
+    }
+  });
+
 </script>
 
 <template>
@@ -462,8 +496,9 @@
         <div>
           <div class="author-label">კატეგორია *</div>
           <div class="categories-container">
-            <div class="tags-input" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
+            <div class="tags-input" ref="tagsInputEl" :class="{ 'tags-input-active': dropdownVisible, 'valid-input': tagIsValid === 'valid', 'invalid-input': tagIsValid === 'invalid' }">
               <div v-for="(tag, index) in tags" :key="index" class="category-text-input"
+                   style="cursor: grab"
                    :style="{ backgroundColor: tag.background_color, color: tag.text_color }">
                 <div class="tag-title">
                   {{ tag.title }}
@@ -700,12 +735,12 @@
 
   .author-input {
     margin-top: 8px;
-    width: 270px;
+    width: 254px;
     height: 42px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
-    padding: 0 0 0 16px;
+    padding: 0 16px;
     text-align: left;
     line-height: 20px;
     font-size: 14px;
@@ -765,10 +800,10 @@
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
-    width: 582px;
-    height: 110px;
+    width: 566px;
+    height: 98px;
     resize: none;
-    padding: 12px 0 0 16px;
+    padding: 12px 16px;
     font-size: 14px;
     line-height: 20px;
     color: #1A1A1F;
@@ -828,11 +863,11 @@
     display: flex;
     flex-wrap: nowrap;
     gap: 8px;
-    padding: 6px;
+    padding: 6px 40px 6px 6px;
     border: 1px solid #E4E3EB;
     border-radius: 12px;
     background: #FCFCFD;
-    width: 274px;
+    width: 240px;
     height: 30px;
     overflow: hidden;
   }
@@ -855,7 +890,7 @@
   .dropdown-button {
     margin-left: auto;
     cursor: pointer;
-    border-radius: 0 10px 10px 0;
+    border-radius: 0 9.5px 9.5px 0;
     background: transparent;
     padding: 10px 14.5px 10px 5.5px;
     position: absolute;
@@ -914,12 +949,12 @@
 
   .email-input {
     margin-top: 8px;
-    width: 270px;
+    width: 254px;
     height: 42px;
     border-radius: 12px;
     border: 1px solid #E4E3EB;
     background: #FCFCFD;
-    padding: 0 0 0 16px;
+    padding: 0 16px;
     text-align: left;
     line-height: 20px;
     font-size: 14px;
@@ -977,8 +1012,6 @@
   .tags-input:hover {
     background: #F9F9FA;
   }
-
-
 
 
 
@@ -1043,20 +1076,11 @@
     background: #F8FFF8;
   }
 
-
-  .tags-input::-webkit-scrollbar {
-    width: 5px; /* width of the vertical scrollbar */
-    height: 5px; /* height of the horizontal scrollbar */
+  .tags-input {
+    cursor: grab;
   }
 
-  .tags-input::-webkit-scrollbar-thumb {
-    background: blue; /* color of the scrollbar itself */
+  .tags-input:active {
+    cursor: grabbing;
   }
-
-  .tags-input::-webkit-scrollbar-track {
-    background: grey; /* color of the scrollbar track */
-  }
-
-
-
 </style>

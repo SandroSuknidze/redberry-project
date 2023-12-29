@@ -1,12 +1,9 @@
 <script setup>
-
 </script>
 
 <template>
-  <div>
-    <app-header-blog />
-    <slot />
-  </div>
+  <app-header-blog />
+  <slot />
 </template>
 
 <style scoped>

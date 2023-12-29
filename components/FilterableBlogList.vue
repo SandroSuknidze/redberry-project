@@ -7,6 +7,7 @@ const runtimeConfig = useRuntimeConfig()
 const categories = ref([]);
 const now = ref(new Date());
 const token = '2ee1d522f9401a177a2f3e1a6f9fb8e992e9a2151c22d9186ec7794590751cd3';
+// const token = 'e18e81d3795e2a1d84053f7a25a13c7ea1493a5427ece1cdce064172898cb4e3';
 
 
 setInterval(() => {

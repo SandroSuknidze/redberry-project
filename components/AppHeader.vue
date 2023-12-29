@@ -69,5 +69,6 @@ const auth = useAuth();
     text-decoration: none;
     font-family: 'FiraGO Medium 500', sans-serif;
     line-height: 20px;
+    font-size: 14px;
   }
 </style>
